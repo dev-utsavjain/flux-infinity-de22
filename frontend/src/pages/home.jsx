@@ -8,12 +8,12 @@ const Icon = ({ name, ...props }) => {
 };
 
 const Header = () => (
-  <header className="fixed top-0 left-0 right-0 z-50 bg-[#050506]/80 backdrop-blur-lg border-b border-white/10">
+  <header className="sticky top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-lg border-b border-[#F0F2FF]/50">
     <div className="container mx-auto px-4 md:px-6">
       <div className="flex items-center justify-between h-16">
-        <Link to="/" className="text-white font-bold text-xl">Task Manager</Link>
+        <Link to="/" className="text-[#5E6AD2] font-bold text-xl">TaskFlow</Link>
         <div className="flex items-center gap-4">
-          <Link to="/login" className="text-white hover:text-[#5E6AD2] transition-colors duration-300">Login</Link>
+          <Link to="/login" className="text-slate-700 hover:text-[#5E6AD2] transition-colors duration-300">Login</Link>
           <Link to="/signup" className="px-4 py-2 bg-[#5E6AD2] hover:bg-[#5E6AD2]/80 text-white rounded-lg transition-colors duration-300">Sign Up</Link>
         </div>
       </div>
@@ -22,221 +22,147 @@ const Header = () => (
 );
 
 const Footer = () => (
-  <footer className="bg-[#050506] border-t border-white/10 py-8 mt-12">
-    <div className="container mx-auto px-4 md:px-6 text-center text-white/60">
-      <p>&copy; 2024 Task Manager. All rights reserved.</p>
+  <footer className="bg-[#F0F2FF] border-t border-[#F0F2FF]/50 py-8 mt-12">
+    <div className="container mx-auto px-4 md:px-6 text-center text-slate-600">
+      <p>&copy; 2024 TaskFlow. All rights reserved.</p>
     </div>
   </footer>
 );
 
-const AnimatedTaskList = () => {
+export default function Home() {
   const [tasks, setTasks] = useState([
     { id: 1, text: 'Design new landing page', completed: false },
     { id: 2, text: 'Review pull requests', completed: true },
-    { id: 3, text: 'Update documentation', completed: false },
-    { id: 4, text: 'Plan sprint backlog', completed: false }
+    { id: 3, text: 'Update documentation', completed: false }
   ]);
+  const [newTask, setNewTask] = useState('');
+  const [filter, setFilter] = useState('All');
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTasks(prev => {
-        const incomplete = prev.filter(t => !t.completed);
-        if (incomplete.length === 0) return prev.map(t => ({ ...t, completed: false }));
-        const randomIndex = Math.floor(Math.random() * incomplete.length);
-        return prev.map(t => t.id === incomplete[randomIndex].id ? { ...t, completed: true } : t);
-      });
-    }, 2000);
-    return () => clearInterval(timer);
-  }, []);
+  const addTask = () => {
+    if (!newTask.trim()) return;
+    setTasks(prev => [...prev, { id: Date.now(), text: newTask.trim(), completed: false }]);
+    setNewTask('');
+  };
 
-  return (
-    <div className="bg-[#0A0A0B] border border-white/10 rounded-2xl p-6 backdrop-blur-lg">
-      <div className="space-y-3">
-        {tasks.map(task => (
-          <div key={task.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-all duration-300">
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-300 ${
-              task.completed ? 'bg-[#5E6AD2] border-[#5E6AD2]' : 'border-white/20'
-            }`}>
-              {task.completed && <Icon name="Check" className="w-3 h-3 text-white" />}
-            </div>
-            <span className={`transition-all duration-300 ${task.completed ? 'text-white/40 line-through' : 'text-white'}`}>
-              {task.text}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+  const toggleTask = (id) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  };
 
-export default function Home() {
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const testimonials = [
-    { name: 'Sarah Chen', role: 'Product Manager', quote: 'Increased my productivity by 40%. The drag-drop interface is incredibly intuitive.', company: 'TechCorp' },
-    { name: 'Mike Rodriguez', role: 'Developer', quote: 'Best task manager I\'ve used. The timeline view helps me stay on track with deadlines.', company: 'DevStudio' },
-    { name: 'Emma Thompson', role: 'Designer', quote: 'The project organization features are game-changing. My team collaboration has never been better.', company: 'DesignHub' }
-  ];
+  const deleteTask = (id) => {
+    setTasks(prev => prev.filter(t => t.id !== id));
+  };
 
-  const features = [
-    { icon: 'CheckCircle', title: 'Smart Task Tracking', desc: 'AI-powered suggestions for task prioritization and scheduling' },
-    { icon: 'Users', title: 'Team Collaboration', desc: 'Share projects, assign tasks, and track progress together' },
-    { icon: 'BarChart3', title: 'Progress Analytics', desc: 'Visual dashboards showing productivity metrics and trends' },
-    { icon: 'Clock', title: 'Time Management', desc: 'Built-in pomodoro timer and time tracking for better focus' },
-    { icon: 'Bell', title: 'Smart Notifications', desc: 'Contextual reminders based on deadlines and work patterns' },
-    { icon: 'Shield', title: 'Data Security', desc: 'Enterprise-grade encryption and privacy protection' }
-  ];
+  const filteredTasks = tasks.filter(t => {
+    if (filter === 'Active') return !t.completed;
+    if (filter === 'Completed') return t.completed;
+    return true;
+  });
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTestimonial(prev => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
+  const remaining = tasks.filter(t => !t.completed).length;
 
   return (
-    <div className="min-h-screen bg-[#050506] text-white overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-white to-[#F0F2FF] text-slate-800">
       <Header />
       
-      <main className="pt-16">
-        <section className="relative py-20 md:py-32">
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-20 left-20 w-96 h-96 bg-[#5E6AD2] rounded-full filter blur-3xl animate-pulse" />
-            <div className="absolute bottom-20 right-20 w-96 h-96 bg-[#7C3AED] rounded-full filter blur-3xl animate-pulse delay-2000" />
-          </div>
-          <div className="container mx-auto px-4 md:px-6 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div className="space-y-6">
-                <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-                  Master Your
-                  <span className="text-[#5E6AD2] block">Productivity</span>
-                </h1>
-                <p className="text-xl text-white/80 max-w-lg">
-                  The intelligent task manager that adapts to your workflow. Organize, prioritize, and accomplish more with AI-powered insights.
-                </p>
-                <div className="flex gap-4">
-                  <Link to="/signup" className="px-8 py-4 bg-[#5E6AD2] hover:bg-[#5E6AD2]/80 text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105">
-                    Get Started Free
-                  </Link>
-                  <button className="px-8 py-4 border border-white/20 hover:border-white/40 text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105">
-                    Watch Demo
-                  </button>
-                </div>
-              </div>
-              <div className="lg:pl-12">
-                <AnimatedTaskList />
-              </div>
-            </div>
+      <main className="container mx-auto px-4 md:px-6 py-12">
+        <section className="text-center mb-12">
+          <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-4">TaskFlow</h1>
+          <p className="text-xl text-slate-600 max-w-xl mx-auto">Your intelligent task manager for seamless productivity</p>
+        </section>
+
+        <section className="max-w-3xl mx-auto mb-8">
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && addTask()}
+              placeholder="Add a new task..."
+              className="flex-1 px-6 py-4 bg-white/60 border border-[#5E6AD2]/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5E6AD2] transition-all duration-300 text-lg"
+            />
+            <button
+              onClick={addTask}
+              className="px-6 py-4 bg-[#5E6AD2] hover:bg-[#5E6AD2]/90 text-white rounded-xl font-semibold transition-all duration-300 hover:scale-105 flex items-center gap-2"
+            >
+              <Icon name="Plus" className="w-5 h-5" />
+              Add
+            </button>
           </div>
         </section>
 
-        <section className="py-20 md:py-32">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-6xl font-bold mb-6">Everything You Need</h2>
-              <p className="text-xl text-white/80 max-w-2xl mx-auto">Powerful features designed to streamline your workflow and boost productivity</p>
+        <section className="max-w-3xl mx-auto mb-6">
+          <div className="flex gap-3 justify-center">
+            {['All', 'Active', 'Completed'].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setFilter(tab)}
+                className={`px-6 py-2 rounded-full font-medium transition-all duration-300 ${
+                  filter === tab
+                    ? 'bg-[#5E6AD2] text-white shadow-lg'
+                    : 'bg-white/60 text-slate-600 hover:bg-white'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="max-w-3xl mx-auto">
+          {filteredTasks.length === 0 ? (
+            <div className="text-center py-16">
+              <img
+                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop&auto=format"
+                alt="Empty tasks"
+                className="w-64 mx-auto mb-6 rounded-2xl shadow-soft"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://placehold.co/400x300/F0F2FF/5E6AD2?text=No+Tasks';
+                }}
+              />
+              <p className="text-slate-500 text-lg">No tasks here. Add your first task to get started!</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {features.map((feature, index) => (
-                <div key={index} className="bg-[#0A0A0B] border border-white/10 rounded-2xl p-8 backdrop-blur-lg hover:border-[#5E6AD2]/50 transition-all duration-300 hover:scale-105">
-                  <div className="w-16 h-16 bg-[#5E6AD2]/20 rounded-2xl flex items-center justify-center mb-6">
-                    <Icon name={feature.icon} className="w-8 h-8 text-[#5E6AD2]" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
-                  <p className="text-white/80">{feature.desc}</p>
+          ) : (
+            <div className="space-y-3">
+              {filteredTasks.map(task => (
+                <div
+                  key={task.id}
+                  className="flex items-center gap-4 p-4 bg-white/60 border border-[#5E6AD2]/10 rounded-xl hover:bg-white transition-all duration-300 hover:shadow-soft"
+                >
+                  <button
+                    onClick={() => toggleTask(task.id)}
+                    className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${
+                      task.completed
+                        ? 'bg-[#00D4AA] border-[#00D4AA]'
+                        : 'border-[#5E6AD2]/30 hover:border-[#5E6AD2]'
+                    }`}
+                  >
+                    {task.completed && <Icon name="Check" className="w-4 h-4 text-white" />}
+                  </button>
+                  <span className={`flex-1 transition-all duration-300 ${
+                    task.completed ? 'text-slate-400 line-through' : 'text-slate-800'
+                  }`}>
+                    {task.text}
+                  </span>
+                  <button
+                    onClick={() => deleteTask(task.id)}
+                    className="text-slate-400 hover:text-red-500 transition-colors duration-300 p-1 rounded-lg hover:bg-red-50"
+                  >
+                    <Icon name="X" className="w-5 h-5" />
+                  </button>
                 </div>
               ))}
             </div>
-          </div>
+          )}
         </section>
 
-        <section className="py-20 md:py-32 bg-[#0A0A0B]">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-6xl font-bold mb-6">How It Works</h2>
-              <p className="text-xl text-white/80">Get started in minutes with our intuitive workflow</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              <div className="text-center space-y-6">
-                <div className="w-24 h-24 bg-[#5E6AD2]/20 rounded-3xl flex items-center justify-center mx-auto">
-                  <Icon name="Plus" className="w-12 h-12 text-[#5E6AD2]" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold mb-3">1. Create Tasks</h3>
-                  <p className="text-white/80">Add tasks with natural language. Our AI understands context and suggests optimal scheduling.</p>
-                </div>
-              </div>
-              <div className="text-center space-y-6">
-                <div className="w-24 h-24 bg-[#7C3AED]/20 rounded-3xl flex items-center justify-center mx-auto">
-                  <Icon name="Layout" className="w-12 h-12 text-[#7C3AED]" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold mb-3">2. Organize Projects</h3>
-                  <p className="text-white/80">Group tasks into projects with drag-and-drop simplicity. Set priorities and deadlines effortlessly.</p>
-                </div>
-              </div>
-              <div className="text-center space-y-6">
-                <div className="w-24 h-24 bg-[#00D9FF]/20 rounded-3xl flex items-center justify-center mx-auto">
-                  <Icon name="CheckCircle" className="w-12 h-12 text-[#00D9FF]" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold mb-3">3. Achieve Goals</h3>
-                  <p className="text-white/80">Track progress with visual analytics. Celebrate achievements and maintain momentum.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-20 md:py-32">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-4xl md:text-6xl font-bold mb-16">Loved by Teams Worldwide</h2>
-              <div className="bg-[#0A0A0B] border border-white/10 rounded-2xl p-12 backdrop-blur-lg">
-                <div className="mb-8">
-                  <Icon name="Quote" className="w-12 h-12 text-[#5E6AD2] mx-auto mb-6" />
-                  <p className="text-2xl md:text-3xl text-white/90 italic mb-8">"{testimonials[currentTestimonial].quote}"</p>
-                  <div className="flex items-center justify-center gap-4">
-                    <img
-                      src={`https://images.unsplash.com/photo-${['1494790108755-2616b612b5be', '1507003211169-0a1dd7228f2d', '1438761681033-6461ffad8d80'][currentTestimonial]}?w=64&h=64&fit=crop&auto=format`}
-                      alt={testimonials[currentTestimonial].name}
-                      className="w-16 h-16 rounded-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://placehold.co/64x64/1a1a2e/eaeaea?text=Photo';
-                      }}
-                    />
-                    <div className="text-left">
-                      <p className="font-bold text-lg">{testimonials[currentTestimonial].name}</p>
-                      <p className="text-white/60">{testimonials[currentTestimonial].role} at {testimonials[currentTestimonial].company}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-center gap-2">
-                  {testimonials.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentTestimonial(index)}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        index === currentTestimonial ? 'bg-[#5E6AD2] w-8' : 'bg-white/20'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-20 md:py-32 bg-gradient-to-br from-[#5E6AD2]/20 to-[#7C3AED]/20">
-          <div className="container mx-auto px-4 md:px-6 text-center">
-            <h2 className="text-4xl md:text-6xl font-bold mb-6">Ready to Get Started?</h2>
-            <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">Join thousands of users who have transformed their productivity. Start your free trial today.</p>
-            <Link to="/signup" className="inline-flex items-center gap-3 px-8 py-4 bg-[#5E6AD2] hover:bg-[#5E6AD2]/80 text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105">
-              Start Free Trial
-              <Icon name="ArrowRight" className="w-5 h-5" />
-            </Link>
-          </div>
-        </section>
+        {tasks.length > 0 && (
+          <section className="max-w-3xl mx-auto mt-8 text-center">
+            <p className="text-slate-600">
+              {remaining === 0 ? 'All tasks completed!' : `${remaining} item${remaining === 1 ? '' : 's'} left`}
+            </p>
+          </section>
+        )}
       </main>
 
       <Footer />
